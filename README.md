@@ -3,9 +3,7 @@
 
 
 
-# 🏥 智环引诊 (SmartSync)
-> **2026年全国大学生物联网设计竞赛（乐鑫科技命题）参赛作品**
-> 
+# 🏥 智环引诊 (SmartSync) 
 > 基于云边协同的包容性多模态无感引诊系统 (An inclusive, cloud-edge medical navigation system based on ESP32-S3)
 
 ![ESP32-S3](https://img.shields.io/badge/Hardware-ESP32--S3-orange)
