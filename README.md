@@ -1,12 +1,8 @@
 # SmartSync
 智环引诊 (SmartSync)：基于 ESP32 的云边协同多模态无感引诊系统。通过 NFC 纸环与边缘子站，结合云端柔性调度，实现医院全人群无障碍导诊。 | An inclusive, cloud-edge medical navigation system using ESP32, NFC, and dynamic scheduling to bridge the digital divide.
-一份优秀的 `README.md` 是开源项目的门面，对于国赛评委来说，这是他们了解你们项目整体架构和代码质量的第一站。
 
-结合我们之前梳理的系统架构、三大核心模块以及你们分配好的 GitHub 目录结构，我为你草拟了一份**标准国赛/黑客松级别的 README 模板**。你可以直接复制这些内容，在 GitHub 仓库里点击 `Add a README` 或编辑 `README.md` 文件并提交。
 
-***
 
-```markdown
 # 🏥 智环引诊 (SmartSync)
 > **2026年全国大学生物联网设计竞赛（乐鑫科技命题）参赛作品**
 > 
@@ -76,12 +72,5 @@ SmartSync/
 ---
 *本项目为竞赛开源代码，未经授权请勿用于商业盈利用途。*
 ```
-
-***
-
-### 💡 PM 建议：
-把这个贴进 `README.md` 后，你们的代码仓库看起来就已经像是一个成熟的开源商业项目了。
-
-这个结构清晰地划分了 `/Edge_ESP32`、`/Cloud_Backend` 和 `/Web_Frontend`，这正是我们在“五一冲刺排期”中给四个人划定的阵地。你们各司其职，在自己的文件夹里提交代码，就不会发生合并冲突了。
 
 准备好用 PlatformIO 写下第一行点亮屏幕的代码了吗？
