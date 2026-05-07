@@ -119,28 +119,38 @@ void jd9365_lcd::draw16bitbergbbitmap(uint16_t x, uint16_t y, uint16_t w, uint16
 {
     uint16_t x_start = x;
     uint16_t y_start = y;
-    uint16_t x_end = w + x;
-    uint16_t y_end = h + y;
+    uint16_t x_end = x + w - 1;
+    uint16_t y_end = y + h - 1;
 
     esp_lcd_panel_draw_bitmap(panel_handle, x_start, y_start, x_end, y_end, color_data);
 }
 
 void jd9365_lcd::fillScreen(uint16_t color)
 {
-    uint16_t *color_data = (uint16_t *)heap_caps_malloc(480 * 272 * 2, MALLOC_CAP_INTERNAL);
-    memset(color_data, color, 480 * 272 * 2);
-    draw16bitbergbbitmap(0, 0, 480, 272, color_data);
+    const uint16_t screen_width = width();
+    const uint16_t screen_height = height();
+    const size_t pixel_count = (size_t)screen_width * screen_height;
+    uint16_t *color_data = (uint16_t *)heap_caps_malloc(pixel_count * sizeof(uint16_t), MALLOC_CAP_INTERNAL);
+    assert(color_data);
+
+    for (size_t i = 0; i < pixel_count; i++) {
+        color_data[i] = color;
+    }
+
+    draw16bitbergbbitmap(0, 0, screen_width, screen_height, color_data);
     free(color_data);
 }
 
 void jd9365_lcd::te_on()
 {
-    esp_lcd_panel_io_tx_param(io_handle, 0x35,new (uint8_t[]){0x00}, 1);
+    uint8_t param = 0x00;
+    esp_lcd_panel_io_tx_param(io_handle, 0x35, &param, 1);
 }
 
 void jd9365_lcd::te_off()
 {
-    esp_lcd_panel_io_tx_param(io_handle, 0x34,new (uint8_t[]){0x00}, 0);
+    uint8_t param = 0x00;
+    esp_lcd_panel_io_tx_param(io_handle, 0x34, &param, 0);
 }
 
 uint16_t jd9365_lcd::width()

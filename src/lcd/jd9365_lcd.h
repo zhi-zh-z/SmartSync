@@ -1,5 +1,5 @@
-#ifndef _JD9165_LCD_H
-#define _JD9165_LCD_H
+#ifndef _JD9365_LCD_H
+#define _JD9365_LCD_H
 #include <stdio.h>
 
 class jd9365_lcd

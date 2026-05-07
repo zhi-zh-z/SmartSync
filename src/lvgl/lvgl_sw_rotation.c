@@ -453,7 +453,7 @@ void lvgl_sw_rotation(void)
         },
         .flags = {
             .swap_xy = 0,
-            .mirror_x = 0,
+            .mirror_x = 1,   // 与 esp_lcd_panel_mirror(true,true) 同步，整体180°旋转
             .mirror_y = 1,
         },
     };
