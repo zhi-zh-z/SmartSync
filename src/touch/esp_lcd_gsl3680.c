@@ -438,18 +438,11 @@ static bool esp_lcd_touch_gsl3680_get_xy(esp_lcd_touch_handle_t tp, uint16_t *x,
 
     portENTER_CRITICAL(&tp->data.lock);
 
-    *point_num = Finger_num;
-    x[0] = XY_Coordinate[0].x_position;
-    y[0] = XY_Coordinate[0].y_position;
-
-    if(Finger_num > 1)
-    {
-        for(int i=1;i<Finger_num;i++)
-        {
-            x[i-1] = XY_Coordinate[i].x_position;
-            y[i-1] = XY_Coordinate[i].y_position;
-            // strength[i] = XY_Coordinate[i].finger_id;
-        }
+    *point_num = (Finger_num < max_point_num) ? Finger_num : max_point_num;
+    for (int i = 0; i < *point_num; i++) {
+        x[i] = XY_Coordinate[i].x_position;
+        y[i] = XY_Coordinate[i].y_position;
+        // strength[i] = XY_Coordinate[i].finger_id;
     }
     
 

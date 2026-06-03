@@ -25,20 +25,20 @@
 /**********************
  * STATIC VARIABLES
  **********************/
-static lv_obj_t * scr_common;
-static lv_obj_t * cont_right_idle;
-static lv_obj_t * cont_right_nav;
-static lv_obj_t * cont_right_voice;
+static lv_obj_t * scr_common = nullptr;
+static lv_obj_t * cont_right_idle = nullptr;
+static lv_obj_t * cont_right_nav = nullptr;
+static lv_obj_t * cont_right_voice = nullptr;
 
-static lv_obj_t * lbl_status_text;
-static lv_obj_t * btn_stop;
-static lv_obj_t * map_route_line;
-static lv_obj_t * map_route_head;
+static lv_obj_t * lbl_status_text = nullptr;
+static lv_obj_t * btn_stop = nullptr;
+static lv_obj_t * map_route_line = nullptr;
+static lv_obj_t * map_route_head = nullptr;
 
 // footer 中间按钮（三态）
-static lv_obj_t * btn_reset_footer;   // 待机态：复位
-static lv_obj_t * btn_voice_footer;   // 导航态：语音咨询
-static lv_obj_t * btn_stop_footer;    // 语音态：停止识别
+static lv_obj_t * btn_reset_footer = nullptr;   // 待机态：复位
+static lv_obj_t * btn_voice_footer = nullptr;   // 导航态：语音咨询
+static lv_obj_t * btn_stop_footer = nullptr;    // 语音态：停止识别
 
 // 导航大箭头 canvas 缓冲区（PSRAM 分配，持久存在）
 // 分辨率 360×180，RGB565 = 360*180*2 = 129600 字节
@@ -46,11 +46,15 @@ static lv_obj_t * btn_stop_footer;    // 语音态：停止识别
 #define NAV_ARROW_H 180
 static uint8_t * _s_arrow_buf = nullptr;
 
+// 导航界面专用控件
+static lv_obj_t * lbl_nav_direction = nullptr;  // 导航方向标签（如"请向右走"）
+static lv_obj_t * lbl_nav_destination = nullptr; // 目的地标签（如"目的地：心电图室"）
+
 // 语音界面专用控件
-static lv_obj_t * lbl_asr_result;   // 对话框中显示 ASR 文本
-static lv_obj_t * lbl_rec_hint;     // 录音状态提示（录音中.../识别中...）
-static lv_obj_t * btn_voice_toggle; // 「开始/停止录音」切换按钮
-static lv_obj_t * lbl_voice_btn;    // 按钮文字标签
+static lv_obj_t * lbl_asr_result = nullptr;   // 对话框中显示 ASR 文本
+static lv_obj_t * lbl_rec_hint = nullptr;     // 录音状态提示（录音中.../识别中...）
+static lv_obj_t * btn_voice_toggle = nullptr; // 「开始/停止录音」切换按钮
+static lv_obj_t * lbl_voice_btn = nullptr;    // 按钮文字标签
 
 // 麦克风控制回调（由 main.cpp 注入）
 static voice_start_fn   _voice_start_cb  = nullptr;
@@ -289,16 +293,16 @@ static void create_right_nav(lv_obj_t * parent) {
     lv_canvas_finish_layer(arrow_canvas, &layer);
 
     // ── 「请向右走」—— 40px 粗体 ────────────────────────────
-    lv_obj_t * lbl_dir = lv_label_create(cont_right_nav);
-    lv_label_set_text(lbl_dir, "请向右走");
-    lv_obj_set_style_text_color(lbl_dir, COLOR_BLACK, 0);
-    lv_obj_set_style_text_font(lbl_dir, &ui_font_source_han_40, 0);
+    lbl_nav_direction = lv_label_create(cont_right_nav);
+    lv_label_set_text(lbl_nav_direction, "请向右走");
+    lv_obj_set_style_text_color(lbl_nav_direction, COLOR_BLACK, 0);
+    lv_obj_set_style_text_font(lbl_nav_direction, &ui_font_source_han_40, 0);
 
     // ── 「目的地：心电图室」—— 20px ─────────────────────────
-    lv_obj_t * lbl_dest = lv_label_create(cont_right_nav);
-    lv_label_set_text(lbl_dest, "目的地：心电图室");
-    lv_obj_set_style_text_color(lbl_dest, COLOR_BLACK, 0);
-    lv_obj_set_style_text_font(lbl_dest, &ui_font_source_han_20, 0);
+    lbl_nav_destination = lv_label_create(cont_right_nav);
+    lv_label_set_text(lbl_nav_destination, "目的地：心电图室");
+    lv_obj_set_style_text_color(lbl_nav_destination, COLOR_BLACK, 0);
+    lv_obj_set_style_text_font(lbl_nav_destination, &ui_font_source_han_20, 0);
 }
 
 static void create_right_voice(lv_obj_t * parent) {
@@ -642,10 +646,15 @@ void ui_set_state_voice(void) {
 }
 
 void ui_set_nav_info(const char* direction, const char* destination) {
-    // TODO: 根据 direction 字符串（"向左"/"向右"/"向前"/"到达"等）更新箭头图标
-    // 此处预留，后续可用 lv_label_set_text 动态切换箭头和目的地标签
-    (void)direction;
-    (void)destination;
+    if (lbl_nav_direction && direction) {
+        lv_label_set_text(lbl_nav_direction, direction);
+    }
+    if (lbl_nav_destination && destination) {
+        // 格式化目的地显示
+        char dest_text[64];
+        snprintf(dest_text, sizeof(dest_text), "目的地：%s", destination);
+        lv_label_set_text(lbl_nav_destination, dest_text);
+    }
 }
 
 void ui_set_asr_result(const char* text) {

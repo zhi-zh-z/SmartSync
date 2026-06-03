@@ -361,7 +361,7 @@ void lvgl_sw_rotation(void)
         .scl_io_num = BSP_I2C_SCL,
         .i2c_port = BSP_I2C_NUM,
     };
-    i2c_new_master_bus(&i2c_bus_conf, &i2c_handle);
+    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_bus_conf, &i2c_handle));
 
     my_trace("lvgl_sw_rotation: i2c init done");
 
@@ -370,19 +370,19 @@ void lvgl_sw_rotation(void)
         .chan_id = BSP_MIPI_DSI_PHY_PWR_LDO_CHAN,
         .voltage_mv = BSP_MIPI_DSI_PHY_PWR_LDO_VOLTAGE_MV,
     };
-    esp_ldo_acquire_channel(&ldo_cfg, &phy_pwr_chan);
+    ESP_ERROR_CHECK(esp_ldo_acquire_channel(&ldo_cfg, &phy_pwr_chan));
     my_trace("lvgl_sw_rotation: LDO acquired");
 
     esp_lcd_dsi_bus_handle_t mipi_dsi_bus;
     esp_lcd_dsi_bus_config_t bus_config = JD9365_PANEL_BUS_DSI_2CH_CONFIG();
 
-    esp_lcd_new_dsi_bus(&bus_config, &mipi_dsi_bus);
+    ESP_ERROR_CHECK(esp_lcd_new_dsi_bus(&bus_config, &mipi_dsi_bus));
     my_trace("lvgl_sw_rotation: DSI bus created");
 
     esp_lcd_panel_io_handle_t io = NULL;
     esp_lcd_dbi_io_config_t dbi_config =JD9365_PANEL_IO_DBI_CONFIG();
 
-    esp_lcd_new_panel_io_dbi(mipi_dsi_bus, &dbi_config, &io);
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_dbi(mipi_dsi_bus, &dbi_config, &io));
     my_trace("lvgl_sw_rotation: DBI IO created");
 
     esp_lcd_panel_handle_t disp_panel = NULL;
@@ -420,27 +420,27 @@ void lvgl_sw_rotation(void)
         .bits_per_pixel = 16,
         .vendor_config = &vendor_config,
     };
-    esp_err_t err = esp_lcd_new_panel_jd9365(io, &panel_config, &disp_panel);
-    my_trace(err == ESP_OK ? "lvgl_sw_rotation: Panel JD9365 created" : "lvgl_sw_rotation: Panel JD9365 FAILED");
+    ESP_ERROR_CHECK(esp_lcd_new_panel_jd9365(io, &panel_config, &disp_panel));
+    my_trace("lvgl_sw_rotation: Panel JD9365 created");
     
-    esp_lcd_panel_reset(disp_panel);
+    ESP_ERROR_CHECK(esp_lcd_panel_reset(disp_panel));
     my_trace("lvgl_sw_rotation: Panel reset");
     
-    esp_lcd_panel_init(disp_panel);
-    esp_lcd_panel_mirror(disp_panel, true, true);
+    ESP_ERROR_CHECK(esp_lcd_panel_init(disp_panel));
+    ESP_ERROR_CHECK(esp_lcd_panel_mirror(disp_panel, true, true));
     my_trace("lvgl_sw_rotation: Panel init done");
 
     esp_lcd_dpi_panel_event_callbacks_t cbs = {
         .on_color_trans_done = mipi_dsi_lcd_on_vsync_event,
         .on_refresh_done = mipi_dsi_lcd_on_vsync_event,
     };
-    esp_lcd_dpi_panel_register_event_callbacks(disp_panel, &cbs, NULL);
+    ESP_ERROR_CHECK(esp_lcd_dpi_panel_register_event_callbacks(disp_panel, &cbs, NULL));
     
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;
     esp_lcd_touch_handle_t tp_handle = NULL;
     esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_GSL3680_CONFIG();
     tp_io_config.scl_speed_hz = 100000;
-    esp_lcd_new_panel_io_i2c(i2c_handle, &tp_io_config, &tp_io_handle);
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c(i2c_handle, &tp_io_config, &tp_io_handle));
 
     const esp_lcd_touch_config_t tp_cfg = {
         .x_max = BSP_LCD_H_RES,
@@ -453,20 +453,20 @@ void lvgl_sw_rotation(void)
         },
         .flags = {
             .swap_xy = 0,
-            .mirror_x = 1,   // 与 esp_lcd_panel_mirror(true,true) 同步，整体180°旋转
-            .mirror_y = 1,
+            .mirror_x = 0,
+            .mirror_y = 0,   // Rotation-specific touch mapping is applied by lvgl_port_task.
         },
     };
-    esp_lcd_touch_new_i2c_gsl3680(tp_io_handle, &tp_cfg, &tp_handle);
+    ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_gsl3680(tp_io_handle, &tp_cfg, &tp_handle));
     my_trace("lvgl_sw_rotation: Touch initialized");
  
     my_trace("lvgl_sw_rotation: Turning on display");
-    esp_lcd_panel_disp_on_off(disp_panel, true);
+    ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(disp_panel, true));
  
     my_trace("lvgl_sw_rotation: Calling lvgl_port_init");
     lvgl_port_interface_t interface = (dpi_config.flags.use_dma2d) ? LVGL_PORT_INTERFACE_MIPI_DSI_DMA : LVGL_PORT_INTERFACE_MIPI_DSI_NO_DMA;
-    err = lvgl_port_init(disp_panel, tp_handle, interface);
-    my_trace(err == ESP_OK ? "lvgl_sw_rotation: lvgl_port_init success" : "lvgl_sw_rotation: lvgl_port_init FAILED");
+    ESP_ERROR_CHECK(lvgl_port_init(disp_panel, tp_handle, interface));
+    my_trace("lvgl_sw_rotation: lvgl_port_init success");
 
     bsp_display_backlight_on();
     my_trace("lvgl_sw_rotation: Backlight turned on");

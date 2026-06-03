@@ -42,7 +42,7 @@ static bool _load_credentials(String& ssid, String& password) {
     ssid     = _prefs.getString("ssid", "");
     password = _prefs.getString("pass", "");
     _prefs.end();
-    return (ssid.length() > 0 && password.length() > 0);
+    return ssid.length() > 0;
 }
 
 void wifi_manager_clear_credentials() {

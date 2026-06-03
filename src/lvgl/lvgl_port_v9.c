@@ -594,7 +594,9 @@ static void lvgl_port_task(void *arg)
 #if EXAMPLE_LVGL_PORT_ROTATION_90
         esp_lcd_touch_set_swap_xy(param->tp_handle, true);
         esp_lcd_touch_set_mirror_x(param->tp_handle, false);
-        esp_lcd_touch_set_mirror_y(param->tp_handle, false);
+        // Coordinates are mirrored before X/Y are swapped, so raw Y controls
+        // the horizontal direction after the 90-degree display rotation.
+        esp_lcd_touch_set_mirror_y(param->tp_handle, true);
 #elif EXAMPLE_LVGL_PORT_ROTATION_180
         esp_lcd_touch_set_mirror_x(param->tp_handle, false);
         esp_lcd_touch_set_mirror_y(param->tp_handle, true);

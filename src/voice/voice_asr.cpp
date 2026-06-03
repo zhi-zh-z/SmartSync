@@ -35,8 +35,8 @@ static size_t           _pcm_samples    = 0;         // 已录制的采样数
 static asr_result_cb_t  _result_cb      = nullptr;
 static bool             _need_recognize = false;     // 停录后触发识别标志
 
-// I2S 端口号（确保不与显示/音频冲突，此处使用 I2S_NUM_1）
-static const i2s_port_t MIC_I2S_PORT = I2S_NUM_1;
+// ESP32-P4 legacy PDM RX is only supported on I2S0.
+static const i2s_port_t MIC_I2S_PORT = I2S_NUM_0;
 
 // ======================================================
 //  工具函数：Base64 编码
@@ -106,9 +106,18 @@ bool asr_init() {
     esp_err_t ret = i2s_driver_install(MIC_I2S_PORT, &cfg, 0, NULL);
     if (ret != ESP_OK) {
         Serial.printf("[ASR] ✗ I2S 驱动安装失败: %d\n", ret);
+        free(_pcm_buf);
+        _pcm_buf = nullptr;
         return false;
     }
-    i2s_set_pin(MIC_I2S_PORT, &pins);
+    ret = i2s_set_pin(MIC_I2S_PORT, &pins);
+    if (ret != ESP_OK) {
+        Serial.printf("[ASR] ✗ I2S 引脚配置失败: %d\n", ret);
+        i2s_driver_uninstall(MIC_I2S_PORT);
+        free(_pcm_buf);
+        _pcm_buf = nullptr;
+        return false;
+    }
     i2s_zero_dma_buffer(MIC_I2S_PORT);
 
     Serial.println("[ASR] ✓ 麦克风初始化成功");
@@ -126,7 +135,7 @@ void asr_set_result_callback(asr_result_cb_t callback) {
 //  开始录音
 // ======================================================
 void asr_start_recording() {
-    if (_is_recording) return;
+    if (_is_recording || !_pcm_buf) return;
     _pcm_samples = 0;
     memset(_pcm_buf, 0, ASR_BUF_SIZE);
     i2s_start(MIC_I2S_PORT);
